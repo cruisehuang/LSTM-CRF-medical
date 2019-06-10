@@ -12,80 +12,37 @@ def str2bool(v):
 
 
 def get_entity(tag_seq, char_seq):
-    PER = get_PER_entity(tag_seq, char_seq)
-    LOC = get_LOC_entity(tag_seq, char_seq)
-    ORG = get_ORG_entity(tag_seq, char_seq)
-    return PER, LOC, ORG
+    DISEASE = get_typed_entity(tag_seq, char_seq, 'DISEASE')
+    SYMPTOM = get_typed_entity(tag_seq, char_seq, 'SYMPTOM')
+    BODY = get_typed_entity(tag_seq, char_seq, 'BODY')
+    return DISEASE, SYMPTOM, BODY
 
 
-def get_PER_entity(tag_seq, char_seq):
+def get_typed_entity(tag_seq, char_seq, entity_type):
+    bTag = 'B-' + entity_type
+    iTag = 'I-' + entity_type
     length = len(char_seq)
-    PER = []
+    typed_entity = []
     for i, (char, tag) in enumerate(zip(char_seq, tag_seq)):
-        if tag == 'B-PER':
-            if 'per' in locals().keys():
-                PER.append(per)
-                del per
-            per = char
+        if tag == bTag:
+            if 'ent' in locals().keys():
+                typed_entity.append(ent)
+                del ent
+            ent = char
             if i+1 == length:
-                PER.append(per)
-        if tag == 'I-PER':
-            per += char
+                typed_entity.append(ent)
+        if tag == iTag:
+            if 'ent' not in locals().keys():
+                continue
+            ent += char
             if i+1 == length:
-                PER.append(per)
-        if tag not in ['I-PER', 'B-PER']:
-            if 'per' in locals().keys():
-                PER.append(per)
-                del per
+                typed_entity.append(ent)
+        if tag not in [iTag, bTag]:
+            if 'ent' in locals().keys():
+                typed_entity.append(ent)
+                del ent
             continue
-    return PER
-
-
-def get_LOC_entity(tag_seq, char_seq):
-    length = len(char_seq)
-    LOC = []
-    for i, (char, tag) in enumerate(zip(char_seq, tag_seq)):
-        if tag == 'B-LOC':
-            if 'loc' in locals().keys():
-                LOC.append(loc)
-                del loc
-            loc = char
-            if i+1 == length:
-                LOC.append(loc)
-        if tag == 'I-LOC':
-            loc += char
-            if i+1 == length:
-                LOC.append(loc)
-        if tag not in ['I-LOC', 'B-LOC']:
-            if 'loc' in locals().keys():
-                LOC.append(loc)
-                del loc
-            continue
-    return LOC
-
-
-def get_ORG_entity(tag_seq, char_seq):
-    length = len(char_seq)
-    ORG = []
-    for i, (char, tag) in enumerate(zip(char_seq, tag_seq)):
-        if tag == 'B-ORG':
-            if 'org' in locals().keys():
-                ORG.append(org)
-                del org
-            org = char
-            if i+1 == length:
-                ORG.append(org)
-        if tag == 'I-ORG':
-            org += char
-            if i+1 == length:
-                ORG.append(org)
-        if tag not in ['I-ORG', 'B-ORG']:
-            if 'org' in locals().keys():
-                ORG.append(org)
-                del org
-            continue
-    return ORG
-
+    return typed_entity
 
 def get_logger(filename):
     logger = logging.getLogger('logger')

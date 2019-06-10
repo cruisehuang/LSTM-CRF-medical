@@ -140,13 +140,14 @@ if args.mode == 'train':
     print("train data len=", len(train_data))
     model.train(train_data, test_data)
 elif args.mode == 'test':
+    print(model_path)
     ckpt_file = tf.train.latest_checkpoint(model_path)
     print(ckpt_file)
     model = BiLSTM_CRF(batch_size=args.batch_size, epoch_num=args.epoch, hidden_dim=args.hidden_dim, embeddings=embeddings,
                        dropout_keep=args.dropout, optimizer=args.optimizer, lr=args.lr, clip_grad=args.clip,
                        tag2label=tag2label, vocab=word2id, shuffle=args.shuffle,
                        model_path=ckpt_file, summary_path=summary_path, log_path=log_path, result_path=result_path,
-                       CRF=args.CRF, update_embedding=args.update_embedding)
+                       CRF=args.CRF, update_embedding=args.update_embeddings)
     model.build_graph()
     print("test data: {}".format(test_size))
     model.test(test_data)
@@ -162,22 +163,23 @@ elif args.mode == 'demo':
     
     model.build_graph()
     saver = tf.train.Saver()
-    with tf.Session as sess:
+    with tf.Session() as sess:
         print("========demo===========")
         saver.restore(sess, ckpt_file)
         
         while(1):
-            print('Please input your sentence:')
+            print('请输入医学文本:')
             demo_sent = input()
             if demo_sent == '' or demo_sent.isspace():
-                print('See you next time!')
+                print('Bye!')
                 break
             else:
                 demo_sent = list(demo_sent.strip())
+                #print(demo_sent)
                 demo_data = [(demo_sent, ['O'] * len(demo_sent))]
                 tag = model.demo_one(sess, demo_data)
-                PER, LOC, ORG = get_entity(tag, demo_sent)
-                print('PER: {}\nLOC: {}\nORG: {}'.format(PER, LOC, ORG))
+                DISEASE, SYMPTOM, BODY = get_entity(tag, demo_sent)
+                print('===DISEASE===: {}\n===SYMPTOM===: {}\n===BODY===: {}'.format(DISEASE, SYMPTOM, BODY))
                                                                            
 
 

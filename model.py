@@ -174,16 +174,16 @@ class BiLSTM_CRF(object):
         saver = tf.train.Saver()
         with tf.Session() as sess:
             self.logger.info("============test==========")
-            saver.restor(sess, self.model_path)
+            saver.restore(sess, self.model_path)
 
             label_list, seq_len_list = self.dev_one_epoch(sess, test)
             self.evaluate(label_list, seq_len_list, test)
 
     def demo_one(self, sess, sent):
-        lablel_list = []
+        label_list = []
         for seqs, labels in batch_yield(sent, self.batch_size,self.vocab,self.tag2label, shuffle=False):
             label_list_, _ = self.predict_one_batch(sess, seqs)
-            label_list.extendz(label_list_)
+            label_list.extend(label_list_)
 
         label2tag = {}
         for tag, label in self.tag2label.items():
